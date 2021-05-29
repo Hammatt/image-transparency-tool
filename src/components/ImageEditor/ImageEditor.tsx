@@ -9,14 +9,20 @@ interface ImageEditorProps {
 const ImageEditor:FC<ImageEditorProps> = (imageEditorProps: ImageEditorProps) => {
     const [loading, setLoading] = useState(false);
 
+    function isWhiteishPixel(r: number, g: number, b: number): boolean {
+        const totalValue = r + g + b;
+        const distanceFromPureWhite = 765 - totalValue;
+
+        return distanceFromPureWhite <= 10;
+    }
+
     async function makeBackgroundTransparent(imageSource: string) {
         setLoading(true);
 
         const image = await Jimp.read(imageSource);
         const newImage = await image
             .scan(0, 0, image.bitmap.width, image.bitmap.height, (x, y, idx) => {
-                const isWhitePixel = (image.bitmap.data[idx + 0] === 255) && (image.bitmap.data[idx + 1] === 255) && (image.bitmap.data[idx + 2] === 255);
-                if (isWhitePixel) {
+                if (isWhiteishPixel(image.bitmap.data[idx + 0], image.bitmap.data[idx + 1], image.bitmap.data[idx + 2])) {
                     image.bitmap.data[idx + 3] = 0; //this one is alpha
                 }
             })
